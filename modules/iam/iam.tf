@@ -54,7 +54,10 @@ resource "aws_iam_policy" "administrative-access-policy" {
         Statement = [
             {
                 Effect = "Allow",
-                NotAction = "iam:*"
+                NotAction = [
+                    "iam:*",
+                    "secretsmanager:*"
+                ]
                 Resource = "*"
             },
             {
@@ -84,6 +87,40 @@ resource "aws_iam_policy" "administrative-access-policy" {
                     "iam:TagUser"
                 ],
                 Resource = "arn:aws:iam::*:user/$${aws:username}"
+            }
+        ]
+    })
+}
+
+
+/*
+    Policy to allow users to read there own secrets in Secret Manager
+    with username in the prefix while allowing the same user to other
+    secrests in the store
+*/
+# Resource: secret-manager-policy
+resource "aws_iam_policy" "secret-manager-policy" {
+    name = "secret-manager-policy"
+    description = "Policy to allow users to read there own secrets in Secret Manager with username in the prefix while allowing the same user to other secrests in the store"
+
+    policy = jsonencode({
+        Version: "2012-10-17"
+        Statement = [
+            {
+                Effect = "Allow",
+                Action = [
+                    "secretsmanager:ListSecrets",
+                    "secretsmanager:GetResourcePolicy",
+                    "secretsmanager:DescribeSecret"
+                ],
+                Resource = "*"
+            },
+            {
+                Effect = "Allow",
+                Action = "secretsmanager:GetSecretValue",
+                Resource = [
+                    "arn:aws:secretsmanager:*:*:secret:$${aws:username}-rds-credentials-*"
+                ],
             }
         ]
     })
