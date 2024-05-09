@@ -37,3 +37,54 @@ resource "aws_iam_policy" "s3_access_policy" {
         ]
     })
 }
+
+
+/*
+    Policy to grant administrative access to all resources and
+    read-only access to IAM, with specific actions allowed on
+    own IAM user
+*/
+# Resource: administrative-access-policy
+resource "aws_iam_policy" "administrative-access-policy" {
+    name = "administrative-access-policy"
+    description = "Policy to grant administrative access to all resources and read-only access to IAM, with specific actions allowed on own IAM user"
+
+    policy = jsonencode({
+        Version: "2012-10-17"
+        Statement = [
+            {
+                Effect = "Allow",
+                NotAction = "iam:*"
+                Resource = "*"
+            },
+            {
+                Effect = "Allow",
+                Action = [
+                    "iam:Get*",
+                    "iam:List*",
+                    "iam:Generate*"
+                ],
+                Resource = "*"
+            },
+            {
+                Effect = "Allow",
+                Action = [
+                    "iam:ChangePassword",
+                    "iam:UpdateLoginProfile",
+                    "iam:ListVirtualMFADevices",
+                    "iam:CreateVirtualMFADevice",
+                    "iam:EnableMFADevice",
+                    "iam:GetMFADevice",
+                    "iam:ListMFADevices",
+                    "iam:ResyncMFADevice",
+                    "iam:DeactivateMFADevice",
+                    "iam:CreateAccessKey",
+                    "iam:UpdateAccessKey",
+                    "iam:DeleteAccessKey",
+                    "iam:TagUser"
+                ],
+                Resource = "arn:aws:iam::*:user/$${aws:username}"
+            }
+        ]
+    })
+}
